@@ -46,4 +46,37 @@ plt.plot(portfolio_sims)
 plt.ylabel('portfolio Value($)')
 plt.xlabel('Days')
 plt.title('MC simulation of a stock portfolio')
-plt.show()
+# plt.show()
+
+def mcVaR(returns, alpha=5):
+    """
+    Input: pandas series of returns
+    Output: percentile on return distribution to a given confidence level alpha
+    """
+
+    if isinstance(returns, pd.Series):
+        return np.percentile(returns, alpha)
+    else:
+        raise TypeError("Expected a pandas data series")
+    
+
+def mcCVaR(returns, alpha=5):
+    """
+    Input: pandas series of returns
+    Output: Conditional value at risk or expected shortfall to a given confidence level alpha
+    """
+
+    if isinstance(returns, pd.Series):
+        belowVaR = returns <= mcVaR(returns, alpha=alpha) 
+        return returns[belowVaR].mean()
+    else:
+        raise TypeError("Expected a pandas data series")
+    
+
+portResults = pd.Series(portfolio_sims[-1,:])
+
+VaR = initialPortfolio - mcVaR(portResults, alpha=5)
+CVaR = initialPortfolio - mcCVaR(portResults, alpha=5)
+
+print(f'Value at Risk ${round(VaR, 2)}')
+print(f'Conditional Value at Risk ${round(CVaR, 2)}')
